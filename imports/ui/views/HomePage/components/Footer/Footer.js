@@ -31,17 +31,6 @@ const Footer = () => {
                         </div>
 
                         <div className="col-lg-3 col-md-6 footer-links">
-                            <h4>Nos services</h4>
-                            <ul>
-                                <li><i className="bx bx-chevron-right"></i> <a href="#">Création de sites web</a></li>
-                                <li><i className="bx bx-chevron-right"></i> <a href="#">Développement web</a></li>
-                                <li><i className="bx bx-chevron-right"></i> <a href="#">Gestion des produits</a></li>
-                                <li><i className="bx bx-chevron-right"></i> <a href="#">Commercialisation</a></li>
-                                <li><i className="bx bx-chevron-right"></i> <a href="#">Conception graphique</a></li>
-                            </ul>
-                        </div>
-
-                        <div className="col-lg-3 col-md-6 footer-links">
                             <h4>Nos réseaux sociaux</h4>
                             <p>Cras fermentum odio eu feugiat lide par naso tierra videa magna derita valies</p>
                             <div className="social-links mt-3">
