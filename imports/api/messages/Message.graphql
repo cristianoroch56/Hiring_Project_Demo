@@ -1,0 +1,37 @@
+type Message {
+    _id: ID!
+    firstName: String
+    lastName: String
+    email: String
+    phone: String
+    city: String
+    province: String
+    postalCode: String
+    country: String
+    comment1: String
+    comment2: String
+}
+
+input MessageInput {
+    firstName: String
+    lastName: String
+    email: String
+    phone: String
+    city: String
+    province: String
+    postalCode: String
+    country: String
+    comment1: String
+    comment2: String
+}
+
+type Query {
+    message: Message
+    messages: [Message]
+}
+
+type Mutation {
+  createMessage(message: MessageInput): Message
+  createMessages(messages: [MessageInput]): [Message]
+  deleteMessage(ids: [ID]): [Message]
+}
