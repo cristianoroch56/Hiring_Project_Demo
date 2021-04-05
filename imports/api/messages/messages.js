@@ -2,7 +2,7 @@ import { Mongo } from "meteor/mongo";
 
 const Messages = new Mongo.Collection("messages");
 
-// Messages.remove({});
+Messages.remove({});
 
 // console.log(Messages.find().fetch())
 

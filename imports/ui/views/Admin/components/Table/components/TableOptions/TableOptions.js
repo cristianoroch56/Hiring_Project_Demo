@@ -53,31 +53,31 @@ function TableOptions({ refetch, toggleFilterOpen, selectedFlatRows, deleteMessa
             complete: async function (result) {
                 const { data } = result;
                 let failures = 0;
-                const neat = data.map(message => {
+                let neat = data.map(message => {
                     if (!(message && message.constructor === Object)) {
                         failures++
                         return null;
                     }
 
                     const {
-                        firstName,
-                        lastName,
+                        firtname,
+                        lastname,
                         email,
-                        phone,
+                        telephone,
                         city,
                         province,
-                        postalCode,
+                        postalcode,
                         country,
-                        comment1,
-                        comment2,
+                        comments1,
+                        comments2,
                     } = message;
 
-                    if (!firstName || !lastName || !email || !phone || !city || !province || !postalCode || !country) {
+                    if (!firtname || !lastname || !email || !telephone || !city || !province || !postalcode || !country) {
                         failures++
                         return null;
                     }
 
-                    if (!(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im.test(phone))) {
+                    if (!(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im.test(telephone))) {
                         failures++
                         return null;
                     }
@@ -87,15 +87,33 @@ function TableOptions({ refetch, toggleFilterOpen, selectedFlatRows, deleteMessa
                         return null;
                     }
 
-                    return message;
+                    console.log(message)
+
+                    return {
+                        firstName: firtname,
+                        lastName: lastname,
+                        email,
+                        phone: telephone,
+                        city,
+                        province,
+                        postalCode: postalcode,
+                        country,
+                        comment1: comments1,
+                        comment2: comments2,
+                    };
                 }).filter(e => e);
                 if (failures > 0) alert(`${failures} rows failed for validation`);
                 if (neat.length > 0) {
-                    await createMessages({
-                        variables: {
-                            messages: neat
-                        }
-                    });
+                    const groupsOf50 = [];
+                    while (neat.length > 0) {
+                        const group = neat.filter((e, i) => i < 50);
+                        neat = neat.filter((e, i) => i >= 50);
+                        await createMessages({
+                            variables: {
+                                messages: group
+                            }
+                        })
+                    }
                     refetch()
                 }
                 // console.log(neat)
@@ -143,7 +161,7 @@ function TableOptions({ refetch, toggleFilterOpen, selectedFlatRows, deleteMessa
                     marginRight: 10
                 }}
                 onClick={openFileDialog}
-                // onDrop={handleDrop}
+            // onDrop={handleDrop}
             >
                 <input
                     type="file"
