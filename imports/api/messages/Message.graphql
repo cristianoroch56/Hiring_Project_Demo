@@ -1,7 +1,7 @@
 type Message {
     _id: ID!
-    firstName: String
-    lastName: String
+    firstName: String!
+    lastName: String!
     email: String
     phone: String
     city: String

@@ -1,12 +1,16 @@
 import React, { Fragment, useEffect, useState } from 'react'
 import { Link as RouterLink, useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux';
-import { FetchUser } from '../../../../actions';
+import { FetchUser, NavClicked } from '../../../../actions';
 
-const Header = ({ logout, }) => {
+const Header = ({ logout }) => {
     const AuthState = useSelector(({ Auth }) => Auth);
 
     const [userId, setUserId] = useState(null);
+
+    const dispatch = useDispatch();
+
+    const history = useHistory();
 
     useEffect(() => {
         setUserId(AuthState.userId)
@@ -27,30 +31,43 @@ const Header = ({ logout, }) => {
                     <nav id="navbar" className="navbar">
                         <ul>
                             <li>
-                                <RouterLink className="nav-link scrollto" to="/">Accueil</RouterLink>
+                                <RouterLink className="nav-link scrollto" to="/" onClick={e => {
+                                    e.preventDefault();
+                                    dispatch(NavClicked({
+                                        url: '/'
+                                    }))
+                                    history.push('/')
+                                }}>Accueil</RouterLink>
                             </li>
                             <li>
-                                <RouterLink className="nav-link scrollto" to={{
-                                    pathname: "/",
-                                    hash: "#contact-us",
-                                }} >Formulaire de contact</RouterLink>
+                                <RouterLink
+                                    className="nav-link scrollto"
+                                    to={{
+                                        pathname: "/",
+                                        hash: "#contact-us",
+                                    }}
+                                    onClick={e => {
+                                        e.preventDefault();
+                                        dispatch(NavClicked({
+                                            url: '/#contact-us'
+                                        }))
+                                        history.push('/#contact-us')
+                                    }}>Formulaire de contact</RouterLink>
                             </li>
                             {
                                 userId && (
                                     <li>
-                                        <RouterLink className="nav-link scrollto" to="/admin">Administration</RouterLink>
+                                        <RouterLink className="nav-link scrollto" to="/admin" onClick={e => {
+                                            e.preventDefault();
+                                            dispatch(NavClicked({
+                                                url: '/admin'
+                                            }))
+                                        }}>Administration</RouterLink>
                                     </li>
                                 )
                             }
                             <li>
-                                {
-                                    userId
-                                        ?
-                                        <RouterLink className="nav-link scrollto" to="#logout" onClick={logout}>Se déconnecter</RouterLink>
-                                        :
-                                        <RouterLink className="nav-link scrollto" to="/login">Se connecter</RouterLink>
-
-                                }
+                                <RouterLink className="nav-link scrollto" to="#logout" onClick={logout}>Se déconnecter</RouterLink>
                             </li>
                         </ul>
                         <i className="bi bi-list mobile-nav-toggle"></i>

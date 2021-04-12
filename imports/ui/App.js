@@ -8,6 +8,7 @@ import { withApollo } from 'react-apollo'
 import routes from './routes'
 
 import { configureStore } from './store'
+import LogMonitor from "./utils/LogMonitor";
 const store = configureStore()
 
 const history = createBrowserHistory()
@@ -17,6 +18,7 @@ const App = () => {
 		<StoreProvider store={store}>
 			<Router history={history}>
 				{renderRoutes(routes)}
+				<LogMonitor />
 			</Router>
 		</StoreProvider>
 	);

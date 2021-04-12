@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { Banner, ContactUs, Header, Login, Register, Footer } from './components'
 import { useHistory } from 'react-router-dom'
-import { SignoutSuccess } from '../../actions'
+import { HomepageVisited, NavClicked, SignoutSuccess, UserLoggedOut } from '../../actions'
 
 const HomePage = ({ route }) => {
     const history = useHistory();
@@ -40,6 +40,7 @@ const HomePage = ({ route }) => {
     }, [AuthState.userId])
 
     useEffect(() => {
+        dispatch(HomepageVisited())
         if (history.location.hash === '#contact-us') {
             setTimeout(() => {
                 executeScroll(contactRef);
@@ -78,11 +79,17 @@ const HomePage = ({ route }) => {
 
     const logout = (event) => {
         event.preventDefault();
+        const user = { ...Meteor.user() };
         Meteor.logout();
+        dispatch(UserLoggedOut(user))
+        dispatch(NavClicked({
+            url: '/#logout'
+        }))
         dispatch(SignoutSuccess())
         setLoginOpen(true);
         if (history.location.pathname === '/') {
-            return executeScroll(headerRef)
+            executeScroll(headerRef);
+            return;
         }
         history.push('/')
     }

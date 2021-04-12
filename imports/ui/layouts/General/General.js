@@ -10,10 +10,6 @@ import { useHistory } from 'react-router-dom'
 const GeneralLayout = ({ route }) => {
     const history = useHistory();
 
-    useEffect(() => {
-        console.log(history.location.pathname)
-    }, [history.location.pathname])
-
     return (
         <>
             <Header />

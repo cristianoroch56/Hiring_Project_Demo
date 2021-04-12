@@ -34,7 +34,6 @@ function CustomTableBody({ renderRowSubComponent, page, prepareRow, visibleColum
                                             {...cell.getCellProps()}
                                             onClick={() => {
                                                 if (index < 2) return;
-                                                // console.log(cell.row.original.comment2)
                                                 showMessage(cell.row.original.comment2)
                                             }}
                                             style={{

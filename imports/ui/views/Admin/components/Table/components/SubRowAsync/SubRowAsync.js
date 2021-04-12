@@ -46,8 +46,6 @@ function SubRows({ row, rowProps, visibleColumns, loading }) {
 function SubRowAsync({ row, rowProps, visibleColumns }) {
     const [loading, setLoading] = React.useState(true);
 
-    console.log(row, rowProps)
-
     React.useEffect(() => {
         const timer = setTimeout(() => {
             setLoading(false);

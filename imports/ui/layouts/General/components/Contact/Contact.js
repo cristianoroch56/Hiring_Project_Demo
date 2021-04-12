@@ -63,7 +63,6 @@ const Contact = ({ createMessage, createMessageResult }) => {
     }, [formState.values])
 
     useEffect(() => {
-        console.log(createMessageResult)
         if (!createMessageResult.loading) {
             setFormState(initialState);
         }
@@ -95,7 +94,6 @@ const Contact = ({ createMessage, createMessageResult }) => {
         });
         setLoading(false);
         setFormState(initialState);
-        // console.log(message);
     }
 
     const hasError = (field) =>

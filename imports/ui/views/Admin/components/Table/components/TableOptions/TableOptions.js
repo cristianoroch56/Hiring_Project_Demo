@@ -72,6 +72,7 @@ function TableOptions({ refetch, toggleFilterOpen, selectedFlatRows, deleteMessa
                         comments2,
                     } = message;
 
+                    // column header verification is done manually and no in-built function has been used
                     if (!firtname || !lastname || !email || !telephone || !city || !province || !postalcode || !country) {
                         failures++
                         return null;
@@ -86,8 +87,6 @@ function TableOptions({ refetch, toggleFilterOpen, selectedFlatRows, deleteMessa
                         failures++
                         return null;
                     }
-
-                    console.log(message)
 
                     return {
                         firstName: firtname,
@@ -116,7 +115,6 @@ function TableOptions({ refetch, toggleFilterOpen, selectedFlatRows, deleteMessa
                     }
                     refetch()
                 }
-                // console.log(neat)
             },
             header: true
         });

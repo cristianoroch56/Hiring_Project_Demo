@@ -1,14 +1,12 @@
 import React, { Fragment, useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
-// import Header from './components/Header'
-// import Table from './components/Table'
 import {
     Header,
     Table
 } from './components'
 import { useHistory } from 'react-router-dom'
-import { SignoutSuccess } from '../../actions'
+import { NavClicked, SignoutSuccess, UserLoggedOut } from '../../actions'
 
 const Admin = ({ }) => {
     const history = useHistory();
@@ -23,9 +21,16 @@ const Admin = ({ }) => {
 
     const logout = (event) => {
         event.preventDefault();
+        const user = { ...Meteor.user() };
         Meteor.logout();
-        dispatch(SignoutSuccess())
-        history.push('/')
+        dispatch(NavClicked({
+            url: '/#logout'
+        }))
+        dispatch(UserLoggedOut(user))
+        setTimeout(() => {
+            dispatch(SignoutSuccess())
+            history.push('/')
+        }, 300);
     }
 
     return (

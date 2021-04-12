@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react'
-import validate from 'validate.js'
-import { FormHelperText } from '@material-ui/core';
 import gql from "graphql-tag";
 import { graphql } from "react-apollo";
 import Slide from '@material-ui/core/Slide';
+import { AutoForm, AutoField, ErrorField, LongTextField, SubmitField } from 'uniforms-bootstrap4';
+import { bridge } from './uniform-bridge';
+import { useDispatch } from 'react-redux';
+import { SubmittingForm } from '../../../../actions';
 
 const createMessage = gql`
   mutation createMessage($message: MessageInput) {
@@ -13,38 +15,8 @@ const createMessage = gql`
   }
 `;
 
-const schema = {
-    firstName: {
-        presence: { allowEmpty: false, message: 'is required' },
-    },
-    lastName: {
-        presence: { allowEmpty: false, message: 'is required' },
-    },
-    email: {
-        presence: { allowEmpty: false, message: 'is required' },
-        email: true
-    },
-    phone: {
-        presence: { allowEmpty: false, message: 'is required' },
-        format: /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im
-    },
-    city: {
-        presence: { allowEmpty: false, message: 'is required' },
-    },
-    province: {
-        presence: { allowEmpty: false, message: 'is required' },
-    },
-    postalCode: {
-        presence: { allowEmpty: false, message: 'is required' },
-    },
-    country: {
-        presence: { allowEmpty: false, message: 'is required' },
-    },
-}
-
 // special hook
 function useOnScreen(ref) {
-
     const [isIntersecting, setIntersecting] = useState(false)
 
     const observer = new IntersectionObserver(
@@ -61,16 +33,14 @@ function useOnScreen(ref) {
 }
 
 const ContactUs = ({ createMessage, createMessageResult }) => {
-    const initialState = {
-        isValid: false,
-        values: {},
-        touched: {},
-        errors: {},
-    };
-
-    const [formState, setFormState] = useState(initialState)
     const [loading, setLoading] = useState(false)
+    const [errors, setErrors] = useState([])
 
+    const dispatch = useDispatch()
+
+    const uniformRef = useRef();
+
+    // all of these for section transitions (animation)
     const titleRef = useRef()
     const cardsRef = useRef()
     const formRef = useRef()
@@ -94,53 +64,23 @@ const ContactUs = ({ createMessage, createMessageResult }) => {
     }, [isTitleVisible, isCardVisible, isFormVisible])
 
     useEffect(() => {
-        const errors = validate(formState.values, schema)
-
-        setFormState((formState) => ({
-            ...formState,
-            isValid: errors ? false : true,
-            errors: errors || {},
-        }))
-    }, [formState.values])
-
-    useEffect(() => {
-        console.log(createMessageResult)
         if (!createMessageResult.loading) {
-            setFormState(initialState);
+            // setFormState(initialState);
         }
     }, [createMessageResult, createMessageResult.loading, createMessageResult.called])
 
-    const handleChange = (event) => {
-        event.persist()
-
-        setFormState((formState) => ({
-            ...formState,
-            values: {
-                ...formState.values,
-                [event.target.name]: event.target.value,
-            },
-            touched: {
-                ...formState.touched,
-                [event.target.name]: true,
-            },
-        }))
-    }
-
-    const handleSubmit = async (event) => {
-        event.preventDefault()
+    const handleSubmit = async (values) => {
+        if (errors.length > 0) return;
+        dispatch(SubmittingForm());
         setLoading(true);
         const message = await createMessage({
             variables: {
-                message: formState.values
+                message: values
             }
         });
         setLoading(false);
-        setFormState(initialState);
-        // console.log(message);
+        uniformRef.current.reset();
     }
-
-    const hasError = (field) =>
-        formState.touched[field] && formState.errors[field] ? true : false
 
     return (
         <section id="contact" className="contact">
@@ -204,187 +144,135 @@ const ContactUs = ({ createMessage, createMessageResult }) => {
                         exit: 500,
                     }}
                     in={formMounted} mountOnEnter unmountOnExit>
-                    <form className="php-email-form mt-4" data-aos="fade-up" data-aos-delay="400" onSubmit={handleSubmit}>
-                        <div className="row">
-                            <div className="col-md-6 form-group">
-                                <input
-                                    type="text"
-                                    name="firstName"
-                                    className="form-control"
-                                    placeholder="Prénom"
-                                    onChange={handleChange}
-                                    value={formState.values.firstName || ''}
-                                    disabled={loading}
+                    <div className="php-email-form mt-4">
+                        <AutoForm
+                            schema={bridge}
+                            onSubmit={handleSubmit}
+                            // validate="onChange"
+                            ref={uniformRef}
+                            onValidate={(models, errors) => {
+                                setErrors(errors);
+                            }}
+                        >
+                            <div className="row">
+                                <div className="col-md-6 form-group">
+                                    <AutoField
+                                        name="firstName"
+                                        label={false}
+                                        placeholder="Prénom"
+                                        disabled={loading}
+                                    />
+                                    {errors.filter(e => e.name === 'firstName')[0] && <span style={{ fontSize: "80%", color: "red" }}>You have to provide your first name!</span>}
+                                </div>
+                                <div className="col-md-6 form-group mt-3 mt-md-0">
+                                    <AutoField
+                                        name="lastName"
+                                        label={false}
+                                        placeholder="Nom"
+                                        disabled={loading}
+                                    />
+                                    {errors.filter(e => e.name === 'lastName')[0] && <span style={{ fontSize: "80%", color: "red" }}>You have to provide your last name!</span>}
+                                </div>
+                                <div className="col-md-6 form-group mt-3 mt-md-0">
+                                    <AutoField
+                                        type="email"
+                                        name="email"
+                                        label={false}
+                                        placeholder="Courriel"
+                                        disabled={loading}
+                                    />
+                                    {errors.filter(e => e.name === 'email')[0] && <span style={{ fontSize: "80%", color: "red" }}>You have to provide a valid email!</span>}
+                                </div>
+                                <div className="col-md-6 form-group mt-3 mt-md-0">
+                                    <AutoField
+                                        name="phone"
+                                        label={false}
+                                        placeholder="Téléphone"
+                                        disabled={loading}
+                                    />
+                                    {errors.filter(e => e.name === 'phone')[0] && <span style={{ fontSize: "80%", color: "red" }}>Phone has to be in this format: (000) 000-0000!</span>}
+                                </div>
+                                <div className="col-md-6 form-group mt-3 mt-md-0">
+                                    <AutoField
+                                        name="city"
+                                        label={false}
+                                        placeholder="Ville"
+                                        disabled={loading}
+                                    />
+                                    {errors.filter(e => e.name === 'city')[0] && <span style={{ fontSize: "80%", color: "red" }}>You have to provide your city!</span>}
+                                </div>
+                                <div className="col-md-6 form-group mt-3 mt-md-0">
+                                    <AutoField
+                                        name="province"
+                                        label={false}
+                                        placeholder="Province"
+                                        disabled={loading}
+                                    />
+                                    {errors.filter(e => e.name === 'province')[0] && <span style={{ fontSize: "80%", color: "red" }}>You have to provide your province!</span>}
+                                </div>
+                                <div className="col-md-6 form-group mt-3 mt-md-0">
+                                    <AutoField
+                                        name="postalCode"
+                                        label={false}
+                                        placeholder="Code Postal"
+                                        disabled={loading}
+                                    />
+                                    {errors.filter(e => e.name === 'postalCode')[0] && <span style={{ fontSize: "80%", color: "red" }}>You have to provide your postal code!</span>}
+                                </div>
+                                <div className="col-md-6 form-group mt-3 mt-md-0">
+                                    <AutoField
+                                        name="country"
+                                        label={false}
+                                        placeholder="Pays"
+                                        disabled={loading}
+                                    />
+                                    {errors.filter(e => e.name === 'country')[0] && <span style={{ fontSize: "80%", color: "red" }}>You have to provide your country!</span>}
+                                </div>
+                                <div className="col-md-12 form-group mt-3">
+                                    <LongTextField
+                                        name="comment1"
+                                        label={false}
+                                        placeholder="Commentaires 1"
+                                        disabled={loading}
+                                        rows="5"
+                                    />
+                                </div>
+                                <div className="col-md-12 form-group mt-3">
+                                    <LongTextField
+                                        name="comment2"
+                                        label={false}
+                                        placeholder="Commentaires 2"
+                                        disabled={loading}
+                                        rows="5"
+                                    />
+                                </div>
+                            </div>
+                            <div className="text-center">
+                                <SubmitField
+                                    value="Envoyer le message"
+                                    disabled={loading || errors.length > 0}
                                 />
-                                {
-                                    hasError('firstName')
-                                        ? (
-                                            <FormHelperText id="standard-weight-helper-text">
-                                                {formState.errors.firstName[0]}
-                                            </FormHelperText>
-                                        ) : null
-                                }
                             </div>
-                            <div className="col-md-6 form-group mt-3 mt-md-0">
-                                <input
-                                    type="text"
-                                    name="lastName"
-                                    className="form-control"
-                                    placeholder="Nom"
-                                    onChange={handleChange}
-                                    value={formState.values.lastName || ''}
-                                    disabled={loading}
-                                />
-                                {
-                                    hasError('lastName')
-                                        ? (
-                                            <FormHelperText id="standard-weight-helper-text">
-                                                {formState.errors.lastName[0]}
-                                            </FormHelperText>
-                                        ) : null
-                                }
+                        </AutoForm>
+                        {/* <form className="php-email-form mt-4" data-aos="fade-up" data-aos-delay="400" onSubmit={handleSubmit}>
+                            <div className="row">
+                                <div className="col-md-12 form-group mt-3">
+                                    <textarea
+                                        className="form-control"
+                                        name="comment2"
+                                        rows="5"
+                                        placeholder="Commentaires 2"
+                                        value={formState.values.comment2 || ""}
+                                        onChange={handleChange}
+                                        disabled={loading}
+                                    ></textarea>
+                                </div>
                             </div>
-                            <div className="col-md-6 form-group mt-3 mt-md-0">
-                                <input
-                                    type="email"
-                                    name="email"
-                                    className="form-control"
-                                    placeholder="Courriel"
-                                    onChange={handleChange}
-                                    value={formState.values.email || ''}
-                                    disabled={loading}
-                                />
-                                {
-                                    hasError('email')
-                                        ? (
-                                            <FormHelperText id="standard-weight-helper-text">
-                                                {formState.errors.email[0]}
-                                            </FormHelperText>
-                                        ) : null
-                                }
+                            <div className="text-center">
+                                <button type="submit" disabled={!formState.isValid || createMessageResult.loading}>Envoyer le message</button>
                             </div>
-                            <div className="col-md-6 form-group mt-3 mt-md-0">
-                                <input
-                                    type="text"
-                                    name="phone"
-                                    className="form-control"
-                                    placeholder="Téléphone"
-                                    onChange={handleChange}
-                                    value={formState.values.phone || ''}
-                                    disabled={loading}
-                                />
-                                {
-                                    hasError('phone')
-                                        ? (
-                                            <FormHelperText id="standard-weight-helper-text">
-                                                {formState.errors.phone[0]}
-                                            </FormHelperText>
-                                        ) : null
-                                }
-                            </div>
-                            <div className="col-md-6 form-group mt-3 mt-md-0">
-                                <input
-                                    type="text"
-                                    name="city"
-                                    className="form-control"
-                                    placeholder="Ville"
-                                    onChange={handleChange}
-                                    value={formState.values.city || ''}
-                                    disabled={loading}
-                                />
-                                {
-                                    hasError('city')
-                                        ? (
-                                            <FormHelperText id="standard-weight-helper-text">
-                                                {formState.errors.city[0]}
-                                            </FormHelperText>
-                                        ) : null
-                                }
-                            </div>
-                            <div className="col-md-6 form-group mt-3 mt-md-0">
-                                <input
-                                    type="text"
-                                    name="province"
-                                    className="form-control"
-                                    placeholder="Province"
-                                    onChange={handleChange}
-                                    value={formState.values.province || ''}
-                                    disabled={loading}
-                                />
-                                {
-                                    hasError('province')
-                                        ? (
-                                            <FormHelperText id="standard-weight-helper-text">
-                                                {formState.errors.province[0]}
-                                            </FormHelperText>
-                                        ) : null
-                                }
-                            </div>
-                            <div className="col-md-6 form-group mt-3 mt-md-0">
-                                <input
-                                    type="text"
-                                    name="postalCode"
-                                    className="form-control"
-                                    placeholder="Code Postal"
-                                    onChange={handleChange}
-                                    value={formState.values.postalCode || ''}
-                                    disabled={loading}
-                                />
-                                {
-                                    hasError('postalCode')
-                                        ? (
-                                            <FormHelperText id="standard-weight-helper-text">
-                                                {formState.errors.postalCode[0]}
-                                            </FormHelperText>
-                                        ) : null
-                                }
-                            </div>
-                            <div className="col-md-6 form-group mt-3 mt-md-0">
-                                <input
-                                    type="text"
-                                    name="country"
-                                    className="form-control"
-                                    placeholder="Pays"
-                                    onChange={handleChange}
-                                    value={formState.values.country || ''}
-                                    disabled={loading}
-                                />
-                                {
-                                    hasError('country')
-                                        ? (
-                                            <FormHelperText id="standard-weight-helper-text">
-                                                {formState.errors.country[0]}
-                                            </FormHelperText>
-                                        ) : null
-                                }
-                            </div>
-                            <div className="col-md-12 form-group mt-3">
-                                <textarea
-                                    className="form-control"
-                                    name="comment1"
-                                    rows="5"
-                                    placeholder="Commentaires 1"
-                                    value={formState.values.comment1 || ""}
-                                    onChange={handleChange}
-                                    disabled={loading}
-                                ></textarea>
-                            </div>
-                            <div className="col-md-12 form-group mt-3">
-                                <textarea
-                                    className="form-control"
-                                    name="comment2"
-                                    rows="5"
-                                    placeholder="Commentaires 2"
-                                    value={formState.values.comment2 || ""}
-                                    onChange={handleChange}
-                                    disabled={loading}
-                                ></textarea>
-                            </div>
-                        </div>
-                        <div className="text-center">
-                            <button type="submit" disabled={!formState.isValid || createMessageResult.loading}>Envoyer le message</button>
-                        </div>
-                    </form>
+                        </form> */}
+                    </div>
                 </Slide>
             </div>
         </section >

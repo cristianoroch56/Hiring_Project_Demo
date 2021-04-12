@@ -1,14 +1,22 @@
 import React from 'react';
+import { useDispatch } from 'react-redux';
+import { CommentViewed } from '../../../../actions';
 
 export default [
     {
         Header: () => null,
         id: 'expander',
-        Cell: ({ row }) => (
-            <span {...row.getToggleRowExpandedProps()}>
-                {row.isExpanded ? '👇' : '👉'}
-            </span>
-        ),
+        Cell: ({ row }) => {
+            const dispatch = useDispatch();
+
+            return (
+                <span {...row.getToggleRowExpandedProps()} onMouseUp={e => {
+                    dispatch(CommentViewed(row.original))
+                }}>
+                    {row.isExpanded ? '👇' : '👉'}
+                </span>
+            )
+        },
         SubCell: () => null
     },
     {
@@ -16,7 +24,6 @@ export default [
         "filter": "text",
         "accessor": (d) => d.firstName,
         SubCell: (cellProps) => {
-            console.log(cellProps)
             if (!cellProps.row.original.comment2) {
                 return <i>No comment</i>
             }
